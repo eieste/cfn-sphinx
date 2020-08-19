@@ -4,7 +4,7 @@ import docutils
 from docutils import nodes
 import sphinx
 from docutils.parsers.rst import directives
-from sphinx.locale import l_, _
+from sphinx.locale import _
 from sphinx.domains import Domain, ObjType, Index
 from sphinx.roles import XRefRole
 from sphinx.directives import ObjectDescription
@@ -39,9 +39,9 @@ class CfnNode(ObjectDescription):
     }
 
     doc_field_types = [
-        Field('type', label=l_('Type'), has_arg=False,
+        Field('type', label=_('Type'), has_arg=False,
               names=('type', 'typ')),
-        Field('description', label=l_('Description'), has_arg=False,
+        Field('description', label=_('Description'), has_arg=False,
               names=('desc', 'description'))
     ]
 

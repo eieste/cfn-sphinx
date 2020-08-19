@@ -1,6 +1,37 @@
 import yaml
 import json
 
+class Ref(yaml.YAMLObject):
+    yaml_tag = '!Ref'
+    def __init__(self, val):
+        self.val = val
+
+    @classmethod
+    def from_yaml(cls, loader, node):
+        print(loader)
+        print(node.__dict__)
+        print(node.value)
+        return cls(node.value)
+
+
+class FindInMap(yaml.YAMLObject):
+    yaml_tag = '!FindInMap'
+    def __init__(self, val):
+        self.val = val
+
+    @classmethod
+    def from_yaml(cls, loader, node):
+        return cls(node.value)
+
+class Join(yaml.YAMLObject):
+    yaml_tag = '!Join'
+    def __init__(self, val):
+        self.val = val
+
+    @classmethod
+    def from_yaml(cls, loader, node):
+        return cls(node.value)
+
 
 class CfnExporter:
     def format(self, yml, nesting):
@@ -19,7 +50,7 @@ class CfnExporter:
             return str(yml)
 
         return res
-    
+
     def from_data(self, yml, document):
         reslis = []
 
@@ -83,22 +114,23 @@ class CfnExporter:
             for key, val in yml['Resources'].items():
                 name = key
                 typ = val['Type']
-                prop = val['Properties']
+                if "Properties" in val:
+                    prop = val['Properties']
 
-                vals = ['Description', 'Default', 'AllowedValues',
-                        'ConstraintDescription']
+                    vals = ['Description', 'Default', 'AllowedValues',
+                            'ConstraintDescription']
 
-                reslis.append(".. cfn:resource:: {}".format(name))
-                reslis.append("   :type: {}\n".format(typ))
-                for v in vals:
-                    if v in val:
-                        reslis.append("    :{}:\n".format(v.lower()))
-                        reslis.append((" " * 5) + self.format(val[v], 5))
+                    reslis.append(".. cfn:resource:: {}".format(name))
+                    reslis.append("   :type: {}\n".format(typ))
+                    for v in vals:
+                        if v in val:
+                            reslis.append("    :{}:\n".format(v.lower()))
+                            reslis.append((" " * 5) + self.format(val[v], 5))
 
-                for k, v in prop.items():
-                    reslis.append("    :{}:\n".format(k))
-                    reslis.append((" " * 5) + self.format(v, 5))
-                reslis.append("")
+                    for k, v in prop.items():
+                        reslis.append("    :{}:\n".format(k))
+                        reslis.append((" " * 5) + self.format(v, 5))
+                    reslis.append("")
 
         if 'Outputs' in yml:
             name = "Outputs"
@@ -123,11 +155,16 @@ class CfnExporter:
 class CfnParserYaml:
     @classmethod
     def parse(cls, inputstring, document):
-        y = yaml.load(inputstring)
+        y = yaml.load(inputstring, Loader=yaml.FullLoader)
         exporter = CfnExporter()
         rest = exporter.from_data(y, document)
 
         return rest
+
+
+
+
+
 
 
 class CfnParserJson:
