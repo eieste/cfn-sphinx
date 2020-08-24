@@ -3,11 +3,18 @@ import argparse
 from re import match
 from os.path import basename
 
+
 class CfnBuilder:
+
+    prefix = "cfnstack"
+
     @classmethod
     def run(cls, args):
         print("Processing {}...".format(args.input))
         out = ""
+
+        if args.prefix:
+            CfnBuilder.prefix = args.prefix.lower().strip()
 
         bname = basename(args.input)
         m = match(r'^(.+)(\..+)$', bname)
@@ -29,6 +36,7 @@ def main():
     parser.add_argument('-j', '--json', dest='json', action='store_true')
     parser.add_argument('-y', '--yaml', dest='yaml', action='store_true')
     parser.add_argument('-f', '--file', dest='input', action='store')
+    parser.add_argument('-p', '--prefix', dest='prefix', action='store')
     parser.add_argument('-o', '--output', dest='output', action='store')
 
     CfnBuilder.run(parser.parse_args())

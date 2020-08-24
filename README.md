@@ -20,6 +20,17 @@ pip install json pyyaml docutils sphinx
 pip install .
 ```
 
+## HowTo
+Install via Github (pypi release not available at this development state)
+```
+pip3 install git+https://github.com/eieste/cfn-sphinx
+```
+than run  cfn-sphinx
+```
+cfnsphinx-build -f cfnstack.yaml -o documentation.rst
+```
+
+
 ## Contributors
 
 Mark Meyer <mark@ofosos.org>

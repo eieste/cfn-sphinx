@@ -1,5 +1,6 @@
 import yaml
 import json
+import cfnsphinx.cfn_build as cfnbuild
 
 class Ref(yaml.YAMLObject):
     yaml_tag = '!Ref'
@@ -8,20 +9,25 @@ class Ref(yaml.YAMLObject):
 
     @classmethod
     def from_yaml(cls, loader, node):
-        print(loader)
-        print(node.__dict__)
-        print(node.value)
         return cls(node.value)
 
 
 class FindInMap(yaml.YAMLObject):
     yaml_tag = '!FindInMap'
+
     def __init__(self, val):
         self.val = val
 
     @classmethod
     def from_yaml(cls, loader, node):
-        return cls(node.value)
+
+        path = cfnbuild.CfnBuilder.prefix+"-mapping"
+        name = []
+        for item in node.value:
+            name.append(item.value)
+            path = path+"--"+item.value
+        return ":ref:`{} <{}>`".format(" --> ".join(name), path)
+
 
 class Join(yaml.YAMLObject):
     yaml_tag = '!Join'
@@ -33,8 +39,18 @@ class Join(yaml.YAMLObject):
         return cls(node.value)
 
 
+class GetAtt(yaml.YAMLObject):
+    yaml_tag = '!GetAtt'
+    def __init__(self, val):
+        self.val = val
+
+    @classmethod
+    def from_yaml(cls, loader, node):
+        return cls(node.value)
+
+
 class CfnExporter:
-    def format(self, yml, nesting):
+    def format(self, yml, nesting, prevkey=""):
         res = ""
         if type(yml) is type([]):
             for el in yml:
@@ -43,9 +59,10 @@ class CfnExporter:
                 else:
                     res = res + "* " + self.format(el, nesting + 1) + "\n" + (" " * nesting)
         elif type(yml) is type({}):
-            res = res + "\n" + (" " * (nesting))
+            res = res + "\n"# + (" " * (nesting))
             for k, v in yml.items():
-                res = res + k + "\n" + (" " * (nesting + 2)) + self.format(v, nesting + 2) + "\n" + (" " * nesting)
+                res = res + ".. _{}--{}: \n \n ".format(prevkey.lower(), k.lower())
+                res = res + " " * (nesting) + k + "\n" + (" " * (nesting + 2)) + self.format(v, nesting + 2, "{}--{}".format(prevkey, k)) + "\n" + (" " * nesting)
         else: #string, int, float?
             return str(yml)
 
@@ -54,6 +71,7 @@ class CfnExporter:
     def from_data(self, yml, document):
         reslis = []
 
+        stack_name = document+"stack-"
         name = document
         reslis.append("{}\n{}\n{}\n\n".format("=" * len(name),
                                               name, "=" * len(name)))
@@ -80,15 +98,16 @@ class CfnExporter:
 
         if 'Mappings' in yml:
             name = "Mappings"
+
             reslis.append("{}\n{}\n{}\n\n".format("*" * len(name),
                                                   name, "*" * len(name)))
 
             for key, val in yml['Mappings'].items():
                 name = key
                 typ = 'Mapping'
-
+                prefix = cfnbuild.CfnBuilder.prefix+"-"+typ+"--"+name
                 reslis.append(".. cfn:mapping:: {}\n".format(name))
-                reslis.append((" " * 6) + self.format(val, 6))
+                reslis.append((" " * 6) + self.format(val, 6, prefix))
 
                 reslis.append("")
 
@@ -160,11 +179,6 @@ class CfnParserYaml:
         rest = exporter.from_data(y, document)
 
         return rest
-
-
-
-
-
 
 
 class CfnParserJson:
