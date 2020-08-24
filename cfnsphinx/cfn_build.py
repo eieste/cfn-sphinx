@@ -14,7 +14,7 @@ class CfnBuilder:
         out = ""
 
         if args.prefix:
-            CfnBuilder.prefix = args.prefix.lower().strip()
+            CfnBuilder.prefix = args.prefix
 
         bname = basename(args.input)
         m = match(r'^(.+)(\..+)$', bname)

@@ -42,7 +42,8 @@ class CfnNode(ObjectDescription):
         Field('type', label=_('Type'), has_arg=False,
               names=('type', 'typ')),
         Field('description', label=_('Description'), has_arg=False,
-              names=('desc', 'description'))
+              names=('desc', 'description')),
+        Field('prefix', label=_('Prefix'), has_arg=False)
     ]
 
     def get_meta_type(self):
@@ -128,7 +129,8 @@ class CfnResource(CfnNode):
     final_argument_whitespace = False
     option_spec = {
         'type': rst.directives.unchanged,
-        'description': rst.directives.unchanged
+        'description': rst.directives.unchanged,
+        'prefix': rst.directives.unchanged
     }
     has_content = True
 
@@ -146,14 +148,16 @@ class CfnResource(CfnNode):
         cfncache = self.env.domaindata['cfn']['cfncache']
         awsref = cfncache['ResourceTypes'][typename]['Documentation']
 
-        return nodes.reference(typename,
+        a = nodes.reference(typename,
                                typename,
                                internal=False,
                                refuri=awsref,
                                classes=['awslink'])
+        return a
+
 
     def get_meta_type(self):
-        return 'Resource'
+        return self.options.get('prefix')+'-Resource-'
 
     def get_index_text(self, stackname, name_cls):
         return _('{} (Cfn Resource)') % (name_cls[0])

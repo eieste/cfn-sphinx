@@ -11,7 +11,11 @@ class Ref(yaml.YAMLObject):
 
     @classmethod
     def from_yaml(cls, loader, node):
-        return cls(node.value)
+
+        path = cfnbuild.CfnBuilder.prefix+"-Resource"
+        name = []
+        path = path+"--"+node.value
+        return ":ref:`Reference to {} <{}>`".format(node.value, path)
 
 
 class FindInMap(yaml.YAMLObject):
@@ -23,7 +27,7 @@ class FindInMap(yaml.YAMLObject):
     @classmethod
     def from_yaml(cls, loader, node):
 
-        path = cfnbuild.CfnBuilder.prefix+"-mapping"
+        path = cfnbuild.CfnBuilder.prefix+"-Mapping"
         name = []
         for item in node.value:
             name.append(item.value)
@@ -66,7 +70,7 @@ class CfnExporter:
 
                 if prevkey:
                     current_key = "{}--{}".format(prevkey, k)
-                    res = res + ".. _{}: \n \n ".format(current_key.lower())
+                    res = res + ".. _{}: \n \n ".format(current_key)
                 else:
                     current_key = False
 
@@ -148,7 +152,8 @@ class CfnExporter:
                             'ConstraintDescription']
 
                     reslis.append(".. cfn:resource:: {}".format(name))
-                    reslis.append("   :type: {}\n".format(typ))
+                    reslis.append("   :type: {}".format(typ))
+                    reslis.append("   :prefix: {}\n".format(cfnbuild.CfnBuilder.prefix))
                     for v in vals:
 
 
