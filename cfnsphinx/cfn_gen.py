@@ -1,6 +1,8 @@
 import yaml
 import json
 import cfnsphinx.cfn_build as cfnbuild
+from cfnsphinx.helper import Helper
+
 
 class Ref(yaml.YAMLObject):
     yaml_tag = '!Ref'
@@ -61,8 +63,14 @@ class CfnExporter:
         elif type(yml) is type({}):
             res = res + "\n"# + (" " * (nesting))
             for k, v in yml.items():
-                res = res + ".. _{}--{}: \n \n ".format(prevkey.lower(), k.lower())
-                res = res + " " * (nesting) + k + "\n" + (" " * (nesting + 2)) + self.format(v, nesting + 2, "{}--{}".format(prevkey, k)) + "\n" + (" " * nesting)
+
+                if prevkey:
+                    current_key = "{}--{}".format(prevkey, k)
+                    res = res + ".. _{}: \n \n ".format(current_key.lower())
+                else:
+                    current_key = False
+
+                res = res + " " * (nesting) + k + "\n" + (" " * (nesting + 2)) + self.format(v, nesting + 2, current_key) + "\n" + (" " * nesting)
         else: #string, int, float?
             return str(yml)
 
@@ -142,13 +150,21 @@ class CfnExporter:
                     reslis.append(".. cfn:resource:: {}".format(name))
                     reslis.append("   :type: {}\n".format(typ))
                     for v in vals:
+
+
+
                         if v in val:
                             reslis.append("    :{}:\n".format(v.lower()))
-                            reslis.append((" " * 5) + self.format(val[v], 5))
+                            reslis.append((" " * 5) + self.format(val[v], 5), False)
 
                     for k, v in prop.items():
-                        reslis.append("    :{}:\n".format(k))
-                        reslis.append((" " * 5) + self.format(v, 5))
+
+                        if k.lower().strip() == "tags":
+                            reslis.append("    :{}:\n".format(k))
+                            reslis.append(Helper.tagsToTable(v, headline=True))
+                        else:
+                            reslis.append("    :{}:\n".format(k))
+                            reslis.append((" " * 5) + self.format(v, 5, False))
                     reslis.append("")
 
         if 'Outputs' in yml:
