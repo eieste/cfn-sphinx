@@ -164,7 +164,7 @@ class CfnResource(CfnNode):
 
 
     def get_meta_type(self):
-        return self.options.get('prefix')+'-Resource-'
+        return "Resource"
 
     def get_index_text(self, stackname, name_cls):
         return _('{} (Cfn Resource)') % (name_cls[0])
