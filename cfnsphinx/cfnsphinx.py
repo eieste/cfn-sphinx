@@ -13,8 +13,15 @@ from sphinx.util.docfields import Field, GroupedField, TypedField
 from sphinx import addnodes
 import requests
 
+
 def do_nothing(self, node):
     pass
+
+
+def foo(*args, **kwargs):
+    print("+"*100)
+    print(args)
+    print(kwargs)
 
 
 class CodeNode(docutils.nodes.Element):
@@ -253,6 +260,7 @@ class CfnDomain(Domain):
         'out': XRefRole(),
         'map': XRefRole(),
         'cnd': XRefRole(),
+        'refa': foo,
     }
 
     directives = {
@@ -310,15 +318,13 @@ class CfnDomain(Domain):
             'cnd': 'Condition',
         }
         meta = lookup[typ]
-
         todoc, targ = target.split(':', 1)
         return make_refnode(builder, fromdocname, todoc,
                             meta + '-' + targ,
                             contnode, targ)
 
-
 def setup(app):
-    app.add_domain(CfnDomain)
-
+    d = app.add_domain(CfnDomain)
     app.add_node(CodeNode, html=(do_nothing, do_nothing),
                  latex=(do_nothing, do_nothing))
+
