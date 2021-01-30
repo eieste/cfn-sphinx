@@ -152,7 +152,7 @@ class CfnExporter:
                             'ConstraintDescription']
 
                     reslis.append(".. cfn:resource:: {}".format(name))
-                    reslis.append("   :type: {}".format(typ))
+                    reslis.append("   :type: {}\n".format(typ))
                     for v in vals:
 
 
