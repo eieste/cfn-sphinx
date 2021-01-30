@@ -12,9 +12,9 @@ class Ref(yaml.YAMLObject):
     @classmethod
     def from_yaml(cls, loader, node):
 
-        path = Resource"
+        path = "Resource"
         name = []
-        path = path+"--"+node.value
+        path = path+"."+node.value
         return ":ref:`Reference to {} <{}>`".format(node.value, path)
 
 
@@ -31,7 +31,7 @@ class FindInMap(yaml.YAMLObject):
         name = []
         for item in node.value:
             name.append(item.value)
-            path = path+"--"+item.value
+            path = path+"."+item.value
         return ":ref:`{} <{}>`".format(" --> ".join(name), path)
 
 
@@ -56,6 +56,7 @@ class GetAtt(yaml.YAMLObject):
 
 
 class CfnExporter:
+
     def format(self, yml, nesting, prevkey=""):
         res = ""
         if type(yml) is type([]):
